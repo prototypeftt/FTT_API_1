@@ -169,13 +169,15 @@ app.post("/chatbot/newsession", (req, res, next) => {
 );
 
 app.post("/chatbot/selectoption", (req, res, next) => {
+  console.log(req.body);
+  console.log(req.headers);
+
   const message = req.body;
   const senderUuid = message.senderUuid;
   const ref = db.ref("chatbot/" + senderUuid + "/");
-  const jsonOptions = "{\"message\":\"Please choose - \", \"options\":[{\"option\":\"A - Buy Assets\"},{\"option\":\"B - Sell Assets\"},{\"option\":\"C - Contact Broker\"}]}";
-
-
-  // need to build in function call for response
+  const ref2 = db.ref("chatbot/tree/option/" +message.selection);
+  // const jsonOptions = "{\"message\":\"Please choose - \", \"options\":[{\"option\":\"A - Buy Assets\"},{\"option\":\"B - Sell Assets\"},{\"option\":\"C - Contact Broker\"}]}";
+  let messageData="";
 
   ref.set({
     "uuid": senderUuid,
@@ -183,7 +185,10 @@ app.post("/chatbot/selectoption", (req, res, next) => {
   }).catch(
       console.error
   ).then(
-      res.status(201).send(jsonOptions)
+      ref2.once("value", function(snapshot) {
+        messageData = snapshot.val();
+        res.status(201).send(JSON.stringify(messageData));
+      }).catch(console.error)
   );
 }
 );
